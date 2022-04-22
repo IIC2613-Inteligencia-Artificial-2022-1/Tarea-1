@@ -4,15 +4,20 @@ import sys
 lines = sys.stdin.readlines()
 
 init = len(lines) - 1
-while "on(" not in lines[init]:
+while "robotOn(" not in lines[init]:
     init -= 1
 
 atoms = lines[init].split(" ")
 
-obstacles = []
-
 rangoX = []
 rangoY = []
+tiempo = []
+
+estanterias = []
+obstaculos = []
+
+robots = []
+cajas = []
 
 
 for line in atoms:
@@ -33,77 +38,51 @@ for line in atoms:
 
 
 for line in atoms:
-    if line[0:3] != "obs":
+    if line[0:4] != "time":
         continue
-    line = line.replace("obstacle", "")
+    line = line.replace("time", "")
     line = line.replace("(", "")
     line = line.replace(")", "")
-    tup = line.split(",")
-    obstacles.append([int(tup[0]), int(tup[1])])
+    tiempo.append(int(line))
 
-en = []
-for line in atoms:
-    if line[0:3] != "on(":
-        continue
-    line = line.replace("on(", "")
-    line = line.replace(")", "")
-    tup = line.split(",")
-    en.append([int(tup[0])-1, int(tup[1]), int(tup[2]), int(tup[3])])
 
-objectives = []
 for line in atoms:
-    if line[0:3] != "goa":
+    if line[0:4] != "goal":
         continue
     line = line.replace("goal", "")
     line = line.replace("(", "")
     line = line.replace(")", "")
     tup = line.split(",")
-    objectives.append([int(tup[0])-1, int(tup[1]), int(tup[2]), int(tup[3])])
+    estanterias.append([int(tup[0]), int(tup[1])])
 
-robots = []
-for t in en:
-    if t[0] not in robots:
-        robots.append(t[0])
-
-times = []
-for t in en:
-    if t[3] not in times:
-        times.append(t[3])
-times.sort()
-
-en.sort(key=lambda x: x[3])
-en.sort(key=lambda x: x[0])
-
-pos = {}
-
-for r in robots:
-    pos['rob_' + str(r)] = []
-
-for t in en:
-    pos['rob_' + str(t[0])].append([t[1], t[2]])
+for line in atoms:
+    if line[0:8] != "obstacle":
+        continue
+    line = line.replace("obstacle", "")
+    line = line.replace("(", "")
+    line = line.replace(")", "")
+    tup = line.split(",")
+    obstaculos.append([int(tup[0]), int(tup[1])])
 
 
-# print('var xrange;')
-# print('var yrange;')
-# print('xrange=', max(rangoX), ';')
-# print('yrange=', max(rangoY), ';')
+for line in atoms:
+    if line[0:7] != "robotOn":
+        continue
+    line = line.replace("robotOn", "")
+    line = line.replace("(", "")
+    line = line.replace(")", "")
+    tup = line.split(",")
+    robots.append([int(tup[0]), int(tup[1]), int(tup[2]), int(tup[3])])
 
-# print('var objectives=[];')
-# for t in times:
-#     print('objectives[' + str(t) + ']=', [[r, x, y] for [r, x, y, time] in objectives if time == t])
+for line in atoms:
+    if line[0:5] != "boxOn":
+        continue
+    line = line.replace("boxOn", "")
+    line = line.replace("(", "")
+    line = line.replace(")", "")
+    tup = line.split(",")
+    cajas.append([int(tup[0]), int(tup[1]), int(tup[2]), int(tup[3]), int(tup[4])])
 
-# print('var obstacles;')
-# print('obstacles=', obstacles)
-
-# print('var pos=[];')
-# i = 0
-# for r in robots:
-#     print('pos[' + str(i) + ']=', pos['rob_' + str(r)], ';')
-#     i += 1
-
-# print('var events=[]')
-# for t in times:
-#     print('events[' + str(t) + ']=', [[r, x, y] for [r, x, y, time] in en if time == t])
 ## FIN CODIGO AYUDANTIA
 
 
@@ -111,19 +90,29 @@ for t in en:
 f = open('salida.txt','w')
 
 # Rango y tiempo
-f.write(f"{max(rangoX)},{max(rangoY)}")
-f.write(f"{max(times)}")
+# "dimensionX,dimensionY"
+f.write(f"{max(rangoX)},{max(rangoY)}\n")
+# Tiempo maximo
+f.write(f"{max(tiempo)}\n")
 
 # Estanterias
-for objetive in objectives:
-    f.write(f"E,{objetive[1]},{objetive[2]}")
+# "E,posX,posY"
+for estanteria in estanterias:
+    f.write(f"E,{estanteria[0]},{estanteria[1]}\n")
 
 # Obstaculos
-for obstacle in obstacles:
-    f.write(f"O,{obstacle[0]},{obstacle[1]}")
+# "O,posX,posY"
+for obstaculo in obstaculos:
+    f.write(f"O,{obstaculo[0]},{obstaculo[1]}\n")
 
 # Robots
+# "R,id,posX,posY,tiempo"
+for robot in robots:
+    f.write(f"R,{robot[0]},{robot[1]},{robot[2]},{robot[3]}\n")
 
 # Cajas
+# "C,id,posX,posY,posZ,tiempo"
+for caja in cajas:
+    f.write(f"C,{caja[0]},{caja[1]},{caja[2]},{caja[3]},{caja[4]}\n")
 
 f.close()
